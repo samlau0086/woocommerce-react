@@ -117,6 +117,8 @@ export interface ProductReview {
   content: string;
   date: string;
   images?: string[];
+  up_votes?: number;
+  down_votes?: number;
 }
 
 export interface PaymentGateway {

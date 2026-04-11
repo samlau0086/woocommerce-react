@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Product, ProductReview } from '../types';
 import { getProductBySlug, getProductReviews, addProductReview, isApiConfigured, getCoupons } from '../services/api';
 import { useCart } from '../context/CartContext';
-import { Loader2, ArrowLeft, Minus, Plus, ShoppingCart, Star, User, AlertCircle, Tag, Copy, ChevronRight, Image as ImageIcon, X, Check } from 'lucide-react';
+import { Loader2, ArrowLeft, Minus, Plus, ShoppingCart, Star, User, AlertCircle, Tag, Copy, ChevronRight, Image as ImageIcon, X, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { decodeHtml } from '../utils/html';
 import { PriceDisplay } from '../components/PriceDisplay';
 
@@ -32,6 +32,9 @@ export const ProductDetails: React.FC = () => {
   const [showCouponSuccess, setShowCouponSuccess] = useState(false);
   const [copiedCoupons, setCopiedCoupons] = useState<Record<string, boolean>>({});
   const [showReviewSuccess, setShowReviewSuccess] = useState(false);
+
+  // Voting state
+  const [votingState, setVotingState] = useState<Record<number, { status: 'loading' | 'voted', vote?: 'up' | 'down' }>>({});
 
   // Gallery state
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -178,6 +181,46 @@ export const ProductDetails: React.FC = () => {
       ...prev,
       [attributeName]: value
     }));
+  };
+
+  const handleVote = async (commentId: number, vote: 'up' | 'down') => {
+    if (!product) return;
+    
+    // Check if already voted
+    if (votingState[commentId]?.status === 'voted') return;
+    
+    setVotingState(prev => ({
+      ...prev,
+      [commentId]: { status: 'loading', vote }
+    }));
+
+    try {
+      const { voteReview } = await import('../services/api');
+      const result = await voteReview(commentId, product.id, vote);
+      
+      // Update the review in the local state
+      setReviews(prevReviews => 
+        prevReviews.map(r => 
+          r.id === commentId 
+            ? { ...r, up_votes: result.up, down_votes: result.down }
+            : r
+        )
+      );
+      
+      setVotingState(prev => ({
+        ...prev,
+        [commentId]: { status: 'voted', vote }
+      }));
+    } catch (error) {
+      console.error('Failed to vote:', error);
+      // Revert state on error
+      setVotingState(prev => {
+        const newState = { ...prev };
+        delete newState[commentId];
+        return newState;
+      });
+      alert('Failed to submit vote. Please try again.');
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -362,9 +405,31 @@ export const ProductDetails: React.FC = () => {
           </div>
 
           <div 
-            className="text-gray-500 mb-8 wp-blocks-content text-sm"
+            className="text-gray-500 mb-6 wp-blocks-content text-sm"
             dangerouslySetInnerHTML={{ __html: product.short_description }}
           />
+
+          {/* Product Rating Link */}
+          <a 
+            href="#reviews" 
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="flex items-center gap-2 mb-8 group cursor-pointer hover:opacity-80 transition-opacity w-fit"
+          >
+            <div className="flex items-center">
+              {[...Array(5)].map((_, i) => (
+                <Star 
+                  key={i} 
+                  className={`w-4 h-4 ${i < Math.round(parseFloat(product.average_rating || '0')) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                />
+              ))}
+            </div>
+            <span className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors underline decoration-gray-300 underline-offset-4">
+              {product.average_rating || '0.0'} ({product.rating_count || 0} Customer Reviews)
+            </span>
+          </a>
 
           {/* Variations */}
           {product.type === 'variable' && product.attributes.filter(a => a.variation).length > 0 && (
@@ -511,7 +576,7 @@ export const ProductDetails: React.FC = () => {
       )}
 
       {/* Reviews Section */}
-      <div className="mt-16 pt-10 border-t border-gray-200">
+      <div id="reviews" className="mt-16 pt-10 border-t border-gray-200 scroll-mt-24">
         <h2 className="text-2xl font-bold text-gray-900 mb-8">Customer Reviews</h2>
         
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-8">
@@ -646,7 +711,7 @@ export const ProductDetails: React.FC = () => {
                       <p>{review.content}</p>
                     </div>
                     {review.images && review.images.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-3">
+                      <div className="flex flex-wrap gap-2 mt-3 mb-4">
                         {review.images.map((img, idx) => (
                           <a key={idx} href={img} target="_blank" rel="noopener noreferrer" className="block w-24 h-24 rounded-md overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity">
                             <img src={img} alt={`Review photo ${idx + 1}`} className="w-full h-full object-cover" />
@@ -654,6 +719,36 @@ export const ProductDetails: React.FC = () => {
                         ))}
                       </div>
                     )}
+                    
+                    {/* Helpful Voting */}
+                    <div className="flex items-center gap-4 mt-4 text-sm text-gray-500">
+                      <span className="font-medium">Helpful?</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => handleVote(review.id, 'up')}
+                          disabled={votingState[review.id]?.status === 'loading' || votingState[review.id]?.status === 'voted'}
+                          className={`flex items-center gap-1.5 transition-colors ${
+                            votingState[review.id]?.vote === 'up' ? 'text-blue-600' : 'hover:text-blue-600'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          <ThumbsUp className={`w-4 h-4 ${votingState[review.id]?.vote === 'up' ? 'fill-current' : ''}`} />
+                          <span>{review.up_votes || 0}</span>
+                        </button>
+                        <button 
+                          onClick={() => handleVote(review.id, 'down')}
+                          disabled={votingState[review.id]?.status === 'loading' || votingState[review.id]?.status === 'voted'}
+                          className={`flex items-center gap-1.5 transition-colors ${
+                            votingState[review.id]?.vote === 'down' ? 'text-red-600' : 'hover:text-red-600'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          <ThumbsDown className={`w-4 h-4 ${votingState[review.id]?.vote === 'down' ? 'fill-current' : ''}`} />
+                          <span>{review.down_votes || 0}</span>
+                        </button>
+                        {votingState[review.id]?.status === 'loading' && (
+                          <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))
               ) : (

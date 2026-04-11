@@ -90,6 +90,57 @@ async function startServer() {
     }
   });
 
+  // API route to handle helpful/not helpful voting
+  app.post("/api/reviews/:commentId/vote", async (req, res) => {
+    try {
+      const { commentId } = req.params;
+      const { vote, productId } = req.body; // vote should be 'up' or 'down'
+      const wpApiUrl = process.env.VITE_WP_API_URL || "https://wmvault.com";
+
+      if (!vote || !['up', 'down'].includes(vote)) {
+        return res.status(400).json({ error: "Invalid vote type" });
+      }
+
+      if (!productId) {
+        return res.status(400).json({ error: "Product ID is required" });
+      }
+
+      // 1. Fetch the product page to get the nonce and cookies
+      const pageRes = await fetch(`${wpApiUrl}/?p=${productId}`);
+      const html = await pageRes.text();
+      const match = html.match(/var woocommerce_photo_reviews_params = (\{.*?\});/);
+      const params = match ? JSON.parse(match[1]) : null;
+      const nonce = params ? params.nonce : '';
+      const cookies = pageRes.headers.get('set-cookie')?.split(';')[0] || '';
+
+      if (!nonce) {
+        return res.status(400).json({ error: "Could not find nonce for voting" });
+      }
+
+      // 2. Submit the vote
+      const form = new URLSearchParams();
+      form.append('action', 'wcpr_helpful_button_handle');
+      form.append('vote', vote);
+      form.append('comment_id', commentId);
+      form.append('nonce', nonce);
+
+      const submitRes = await fetch(`${wpApiUrl}/wp-admin/admin-ajax.php`, {
+        method: 'POST',
+        headers: {
+          'Cookie': cookies,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        },
+        body: form
+      });
+
+      const data = await submitRes.json();
+      res.status(200).json(data);
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

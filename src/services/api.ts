@@ -288,8 +288,8 @@ export const getProductReviews = async (productId: number): Promise<ProductRevie
     if (!response.ok) throw new Error('Failed to fetch product reviews');
     const reviews = await response.json();
     
-    // Fetch images from the WooCommerce Photo Reviews plugin via AJAX
-    let pluginImages: Record<number, string[]> = {};
+    // Fetch images and votes from the WooCommerce Photo Reviews plugin via AJAX
+    let pluginData: Record<number, { images: string[], upVotes: number, downVotes: number }> = {};
     try {
       const params = new URLSearchParams();
       params.append('action', 'wcpr_ajax_load_more_reviews');
@@ -304,7 +304,7 @@ export const getProductReviews = async (productId: number): Promise<ProductRevie
       if (ajaxRes.ok) {
         const ajaxData = await ajaxRes.json();
         if (ajaxData && ajaxData.html) {
-          // Parse the HTML to extract images for each review
+          // Parse the HTML to extract images and votes for each review
           const html = ajaxData.html;
           const commentBlocks = html.split('id="comment-');
           
@@ -314,6 +314,8 @@ export const getProductReviews = async (productId: number): Promise<ProductRevie
             if (idMatch) {
               const commentId = parseInt(idMatch[1], 10);
               const images: string[] = [];
+              let upVotes = 0;
+              let downVotes = 0;
               
               // Find all images in this comment block
               const imgRegex = /<img[^>]*class="[^"]*reviews-images[^"]*"[^>]*>/g;
@@ -325,19 +327,31 @@ export const getProductReviews = async (productId: number): Promise<ProductRevie
                   images.push(srcMatch[1]);
                 }
               }
+
+              // Find up/down votes
+              const upVoteMatch = block.match(/<span class="wcpr-comment-helpful-button-up-vote-count">\s*(\d+)\s*<\/span>/);
+              if (upVoteMatch) {
+                upVotes = parseInt(upVoteMatch[1], 10);
+              }
+              const downVoteMatch = block.match(/<span class="wcpr-comment-helpful-button-down-vote-count">\s*(\d+)\s*<\/span>/);
+              if (downVoteMatch) {
+                downVotes = parseInt(downVoteMatch[1], 10);
+              }
               
-              pluginImages[commentId] = images;
+              pluginData[commentId] = { images, upVotes, downVotes };
             }
           }
         }
       }
     } catch (e) {
-      console.warn('Failed to fetch plugin review images', e);
+      console.warn('Failed to fetch plugin review data', e);
     }
 
     // Map WC review structure to our ProductReview interface
     const mappedReviews = reviews.map((r: any) => {
-      let images: string[] = pluginImages[r.id] || [];
+      let images: string[] = pluginData[r.id]?.images || [];
+      let up_votes = pluginData[r.id]?.upVotes || 0;
+      let down_votes = pluginData[r.id]?.downVotes || 0;
       
       // Try to load images from local storage (fallback for newly added reviews before they are approved)
       try {
@@ -359,7 +373,9 @@ export const getProductReviews = async (productId: number): Promise<ProductRevie
         rating: r.rating,
         content: r.review.replace(/<[^>]+>/g, ''), // Strip HTML tags
         date: r.date_created,
-        images
+        images,
+        up_votes,
+        down_votes
       };
     });
 
@@ -492,6 +508,40 @@ export const addProductReview = async (productId: number, author_name: string, r
     }
   } catch (error) {
     console.error('Error adding product review:', error);
+    throw error;
+  }
+};
+
+export const voteReview = async (commentId: number, productId: number, vote: 'up' | 'down'): Promise<{ up: number, down: number }> => {
+  try {
+    const response = await fetch(`/api/reviews/${commentId}/vote`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ vote, productId })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to submit vote');
+    }
+
+    const data = await response.json();
+    
+    // Clear the reviews cache for this product so the updated votes are fetched next time
+    try {
+      sessionStorage.removeItem(`wc_product_reviews_cache_${productId}`);
+    } catch (e) {
+      console.warn('Failed to clear reviews cache', e);
+    }
+
+    return {
+      up: data.up || 0,
+      down: data.down || 0
+    };
+  } catch (error) {
+    console.error('Error voting on review:', error);
     throw error;
   }
 };
