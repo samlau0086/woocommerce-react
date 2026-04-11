@@ -12,7 +12,8 @@ export const ProductDetails: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<ProductReview[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingProduct, setLoadingProduct] = useState(true);
+  const [loadingReviews, setLoadingReviews] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const { addToCart, cart } = useCart();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -56,33 +57,48 @@ export const ProductDetails: React.FC = () => {
     const fetchProductAndReviews = async () => {
       if (!slug) return;
       if (!isApiConfigured) {
-        setLoading(false);
+        setLoadingProduct(false);
+        setLoadingReviews(false);
         return;
       }
-      setLoading(true);
+      
+      setLoadingProduct(true);
+      setLoadingReviews(true);
+      
       try {
-        // Fetch product data (will use cache if available)
+        // Fetch product data first so we can render it immediately
         const productData = await getProductBySlug(slug);
         setProduct(productData);
-        if (productData) {
-          const reviewsData = await getProductReviews(productData.id);
-          setReviews(reviewsData);
-        }
+        setLoadingProduct(false); // Stop product loading state
         
-        // Fetch coupons
-        const couponsData = await getCoupons();
-        setCoupons(couponsData);
+        if (productData) {
+          // Fetch reviews and coupons concurrently after product is loaded
+          const [reviewsData, couponsData] = await Promise.all([
+            getProductReviews(productData.id).catch(err => {
+              console.error('Error fetching reviews:', err);
+              return [];
+            }),
+            getCoupons().catch(err => {
+              console.error('Error fetching coupons:', err);
+              return [];
+            })
+          ]);
+          
+          setReviews(reviewsData);
+          setCoupons(couponsData);
+        }
       } catch (error) {
         console.error('Error fetching product:', error);
+        setLoadingProduct(false);
       } finally {
-        setLoading(false);
+        setLoadingReviews(false);
       }
     };
 
     fetchProductAndReviews();
   }, [slug]);
 
-  if (loading) {
+  if (loadingProduct) {
     return <ProductDetailSkeleton />;
   }
 
@@ -688,7 +704,11 @@ export const ProductDetails: React.FC = () => {
 
           <div className="lg:col-span-8">
             <div className="space-y-8">
-              {reviews.length > 0 ? (
+              {loadingReviews ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                </div>
+              ) : reviews.length > 0 ? (
                 reviews.map((review) => (
                   <div key={review.id} className="border-b border-gray-200 pb-8 last:border-0">
                     <div className="flex items-center mb-2">
