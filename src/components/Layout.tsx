@@ -26,9 +26,10 @@ export const Layout: React.FC = () => {
     fetchSiteInfo();
   }, []);
 
-  // Close mobile menu when route changes
+  // Close mobile menu and scroll to top when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    window.scrollTo(0, 0);
   }, [location.pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
