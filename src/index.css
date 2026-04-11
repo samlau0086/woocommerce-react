@@ -1,0 +1,82 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Basic WordPress Block Editor Styles Support */
+.wp-blocks-content {
+  @apply leading-relaxed;
+}
+
+.wp-blocks-content p {
+  @apply mb-4;
+}
+
+.wp-blocks-content h1, 
+.wp-blocks-content h2, 
+.wp-blocks-content h3, 
+.wp-blocks-content h4 {
+  @apply font-bold text-gray-900 mt-8 mb-4;
+}
+
+.wp-blocks-content h2 {
+  @apply text-2xl;
+}
+
+.wp-blocks-content h3 {
+  @apply text-xl;
+}
+
+.wp-blocks-content ul {
+  @apply list-disc pl-5 mb-4;
+}
+
+.wp-blocks-content ol {
+  @apply list-decimal pl-5 mb-4;
+}
+
+.wp-blocks-content .wp-block-image {
+  @apply my-8;
+}
+
+.wp-blocks-content .wp-block-image img {
+  @apply rounded-lg shadow-sm w-full h-auto;
+}
+
+.wp-blocks-content .wp-block-columns {
+  @apply flex flex-col md:flex-row gap-6 my-8;
+}
+
+.wp-blocks-content .wp-block-column {
+  @apply flex-1;
+}
+
+.wp-blocks-content .has-text-align-center {
+  @apply text-center;
+}
+
+.wp-blocks-content .has-text-align-right {
+  @apply text-right;
+}
+
+.wp-blocks-content .has-text-align-left {
+  @apply text-left;
+}
+
+.wp-blocks-content .wp-block-button__link {
+  @apply inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors no-underline;
+}
+
+.wp-blocks-content .wp-block-quote {
+  @apply border-l-4 border-blue-500 pl-4 py-1 italic text-gray-700 bg-gray-50 rounded-r-lg;
+}
+
+.wp-blocks-content .wp-block-separator {
+  @apply my-10 border-t border-gray-200;
+}
+
+.wp-blocks-content figure {
+  @apply m-0;
+}
+
+.wp-blocks-content figcaption {
+  @apply text-sm text-gray-500 text-center mt-2;
+}
