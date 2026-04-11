@@ -97,6 +97,9 @@ npm run build
 进入你的 GitHub 仓库，点击 **Settings** > **Secrets and variables** > **Actions**，添加以下 Secrets：
 - `CLOUDFLARE_ACCOUNT_ID`: 你的 Cloudflare 账户 ID。
 - `CLOUDFLARE_API_TOKEN`: 你的 Cloudflare API 令牌。
+- `VITE_WC_CONSUMER_KEY`: Woocommerce Consumer Key
+- `VITE_WC_CONSUMER_SECRET`: Woocommerce Consumer Secret
+- `VITE_WP_API_URL`: 你的 Wordpress网站URL(如https://example.com)
 
 *(注意：为了安全起见，建议你也把 `VITE_WP_API_URL` 等环境变量也加到 GitHub Secrets 中，并在 workflow 文件中注入，或者直接在 Cloudflare Pages 的后台设置环境变量)*
 
