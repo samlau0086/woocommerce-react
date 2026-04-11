@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { BlogPost, Comment } from '../types';
 import { getPostBySlug, getCommentsByPostId, addComment, isApiConfigured } from '../services/api';
+import { BlogPostDetailSkeleton } from '../components/Skeletons';
 import { Loader2, ArrowLeft, Calendar, MessageSquare, User, AlertCircle, ChevronRight } from 'lucide-react';
 
 export const BlogPostPage: React.FC = () => {
@@ -75,11 +76,7 @@ export const BlogPostPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
+    return <BlogPostDetailSkeleton />;
   }
 
   if (!isApiConfigured) {

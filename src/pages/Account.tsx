@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { GenericSkeleton } from '../components/Skeletons';
 import { CheckCircle2, Loader2, LogOut, User as UserIcon, Eye, EyeOff, Package, MapPin, Settings, LayoutDashboard } from 'lucide-react';
 import { registerCustomer, getCustomerByEmail, loginCustomer, isApiConfigured, getCustomerOrders, getCustomer, updateCustomer, getCurrentUser, getCountries } from '../services/api';
 
@@ -15,7 +16,7 @@ const OrdersSection = ({ userId }: { userId: number }) => {
     getCustomerOrders(userId).then(setOrders).finally(() => setLoading(false));
   }, [userId]);
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
+  if (loading) return <GenericSkeleton className="w-full h-64" />;
   if (orders.length === 0) return (
     <div className="text-center p-8 bg-gray-50 rounded-lg border border-gray-200">
       <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -135,7 +136,7 @@ const AddressesSection = ({ userId }: { userId: number }) => {
     }
   };
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
+  if (loading) return <GenericSkeleton className="w-full h-64" />;
   if (!customer) return <div className="p-8 text-center text-gray-500">Could not load customer data. Please try logging out and logging in again.</div>;
 
   return (
@@ -371,7 +372,7 @@ const AccountDetailsSection = ({ userId }: { userId: number }) => {
     }
   };
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
+  if (loading) return <GenericSkeleton className="w-full h-64" />;
   if (!customer) return <div className="p-8 text-center text-gray-500">Could not load customer data. Please try logging out and logging in again.</div>;
 
   return (

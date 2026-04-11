@@ -7,6 +7,7 @@ import { FeaturesSection } from '../components/FeaturesSection';
 import { CategoriesGrid } from '../components/CategoriesGrid';
 import { TestimonialsSection } from '../components/TestimonialsSection';
 import { NewsletterCTA } from '../components/NewsletterCTA';
+import { ProductGridSkeleton } from '../components/Skeletons';
 import { Loader2, AlertCircle, ArrowLeftRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -160,9 +161,7 @@ export const Home: React.FC = () => {
           )}
 
           {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            </div>
+            <ProductGridSkeleton count={4} />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {products.slice(0, 4).map((product) => (

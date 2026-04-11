@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Product, ProductReview } from '../types';
 import { getProductBySlug, getProductReviews, addProductReview, isApiConfigured, getCoupons } from '../services/api';
 import { useCart } from '../context/CartContext';
+import { ProductDetailSkeleton } from '../components/Skeletons';
 import { Loader2, ArrowLeft, Minus, Plus, ShoppingCart, Star, User, AlertCircle, Tag, Copy, ChevronRight, Image as ImageIcon, X, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { decodeHtml } from '../utils/html';
 import { PriceDisplay } from '../components/PriceDisplay';
@@ -82,11 +83,7 @@ export const ProductDetails: React.FC = () => {
   }, [slug]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (!isApiConfigured) {

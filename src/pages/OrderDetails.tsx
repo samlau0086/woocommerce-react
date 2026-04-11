@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { GenericSkeleton } from '../components/Skeletons';
 import { Loader2, ArrowLeft, Package, CheckCircle2, Clock, XCircle, AlertCircle, CreditCard } from 'lucide-react';
 import { getOrder, isApiConfigured } from '../services/api';
 
@@ -86,8 +87,10 @@ export const OrderDetails: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          <GenericSkeleton className="w-full h-96" />
+        </div>
       </div>
     );
   }

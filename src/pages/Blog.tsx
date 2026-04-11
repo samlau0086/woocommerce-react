@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BlogPost } from '../types';
 import { getPosts, isApiConfigured } from '../services/api';
+import { BlogGridSkeleton } from '../components/Skeletons';
 import { Loader2, Calendar, AlertCircle } from 'lucide-react';
 
 export const Blog: React.FC = () => {
@@ -29,8 +30,16 @@ export const Blog: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="bg-gray-50 min-h-screen py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">Our Blog</h1>
+            <p className="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
+              Latest news, tips, and insights from our team.
+            </p>
+          </div>
+          <BlogGridSkeleton count={6} />
+        </div>
       </div>
     );
   }

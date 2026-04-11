@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Product } from '../types';
 import { getProducts, getCategories, isApiConfigured } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
+import { ProductGridSkeleton } from '../components/Skeletons';
 import { Loader2, Filter, X, AlertCircle } from 'lucide-react';
 import { decodeHtml } from '../utils/html';
 
@@ -310,9 +311,7 @@ export const Shop: React.FC = () => {
         {/* Product Grid */}
         <div className="flex-1">
           {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            </div>
+            <ProductGridSkeleton count={6} />
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
