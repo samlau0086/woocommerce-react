@@ -64,6 +64,94 @@ npm run dev
 npm run build
 ```
 
+## ☁️ 部署到 Cloudflare Pages (Deploying to Cloudflare Pages)
+
+本项目非常适合部署到 Cloudflare Pages。你可以选择在 Cloudflare 控制台直接关联 GitHub 仓库，或者使用 GitHub Actions 进行自动化部署。
+
+### 选项 1：直接关联 GitHub (推荐，最简单)
+
+1. 登录 [Cloudflare 控制台](https://dash.cloudflare.com/)。
+2. 导航到 **Workers & Pages** > **创建应用程序 (Create application)** > **Pages** > **连接到 Git (Connect to Git)**。
+3. 选择你的 GitHub 仓库。
+4. 配置构建设置 (Build settings)：
+   - **框架预设 (Framework preset):** None (或者选择 Vite 如果有)
+   - **构建命令 (Build command):** `npm run build`
+   - **构建输出目录 (Build output directory):** `dist`
+5. 展开 **环境变量 (Environment variables (advanced))**，添加你的 WordPress 和 WooCommerce 配置：
+   - `VITE_WP_API_URL`
+   - `VITE_WC_CONSUMER_KEY`
+   - `VITE_WC_CONSUMER_SECRET`
+   - `VITE_CF7_FORM_ID`
+   - `VITE_CF7_NEWSLETTER_ID` (如果有)
+6. 点击 **保存并部署 (Save and Deploy)**。
+
+### 选项 2：使用 GitHub Actions 自动化工作流部署
+
+如果你希望通过 GitHub Actions 来完全控制部署流程，请按照以下步骤操作：
+
+#### 1. 获取 Cloudflare 凭证
+- **Account ID:** 在 Cloudflare 控制台右侧边栏可以找到你的账户 ID。
+- **API Token:** 点击右上角头像 > **我的个人资料 (My Profile)** > **API 令牌 (API Tokens)** > **创建令牌 (Create Token)**。选择 "编辑 Cloudflare Workers" 模板，或者创建一个自定义令牌，赋予 `Account.Pages:Edit` 权限。
+
+#### 2. 配置 GitHub Secrets
+进入你的 GitHub 仓库，点击 **Settings** > **Secrets and variables** > **Actions**，添加以下 Secrets：
+- `CLOUDFLARE_ACCOUNT_ID`: 你的 Cloudflare 账户 ID。
+- `CLOUDFLARE_API_TOKEN`: 你的 Cloudflare API 令牌。
+
+*(注意：为了安全起见，建议你也把 `VITE_WP_API_URL` 等环境变量也加到 GitHub Secrets 中，并在 workflow 文件中注入，或者直接在 Cloudflare Pages 的后台设置环境变量)*
+
+#### 3. 创建 Workflow 文件
+在你的项目根目录下，已经存在一个名为 `.github/workflows/cloudflare-pages.yml` 的文件，内容如下。你只需要修改 `projectName` 为你自己的项目名即可：
+
+```yaml
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main # 如果您的主分支是 master，请修改为 master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # 升级到 Node 20，自带的新版 npm 修复了该可选依赖 bug
+
+      - name: Install dependencies
+        run: |
+          rm -rf package-lock.json node_modules
+          npm install --include=optional
+
+      - name: Build project
+        run: npm run build
+        env:
+          # 在这里注入构建时需要的环境变量（从 GitHub Secrets 获取）
+          VITE_WP_API_URL: ${{ secrets.VITE_WP_API_URL }}
+          VITE_WC_CONSUMER_KEY: ${{ secrets.VITE_WC_CONSUMER_KEY }}
+          VITE_WC_CONSUMER_SECRET: ${{ secrets.VITE_WC_CONSUMER_SECRET }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: 'your-project-name' # ⚠️ 请替换为您在 Cloudflare Pages 上创建的项目名称
+          directory: 'dist' # Vite 默认的打包输出目录
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+```
+
+每次你将代码推送到 `main` 分支时，GitHub Actions 就会自动构建项目并将其部署到 Cloudflare Pages。
+
 ## ✨ 功能特性
 *   **完整的购物流程**：商品浏览、加入购物车、结账。
 *   **用户账户系统**：登录、注册、密码找回、订单历史、地址管理。
