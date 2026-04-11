@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingCart, Menu, Search, User, X, MapPin, ArrowLeftRight, Globe, Lock } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
@@ -9,7 +9,9 @@ import { SiteInfo } from '../types';
 export const Layout: React.FC = () => {
   const { cartCount, setIsCartOpen } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [siteInfo, setSiteInfo] = useState<SiteInfo | null>(null);
 
@@ -23,6 +25,11 @@ export const Layout: React.FC = () => {
     };
     fetchSiteInfo();
   }, []);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +70,10 @@ export const Layout: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <button className="p-2 -ml-2 mr-2 md:hidden text-gray-500 hover:text-gray-900">
+              <button 
+                className="p-2 -ml-2 mr-2 md:hidden text-gray-500 hover:text-gray-900"
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
                 <Menu className="w-6 h-6" />
               </button>
               <Link to="/" className="text-xl font-bold tracking-tight">
@@ -108,6 +118,64 @@ export const Layout: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-50 flex md:hidden">
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-25" 
+              onClick={() => setIsMobileMenuOpen(false)}
+            ></div>
+            <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-xl">
+              <div className="px-4 pt-5 pb-2 flex justify-between items-center border-b border-gray-200">
+                <Link to="/" className="text-xl font-bold tracking-tight">
+                  {siteInfo ? siteInfo.name : <>WOO<span className="text-blue-600">STORE</span></>}
+                </Link>
+                <button
+                  type="button"
+                  className="-m-2 p-2 rounded-md inline-flex items-center justify-center text-gray-400 hover:text-gray-500"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <span className="sr-only">Close menu</span>
+                  <X className="h-6 w-6" aria-hidden="true" />
+                </button>
+              </div>
+              <div className="py-6 px-4 space-y-6 overflow-y-auto">
+                <div className="flow-root">
+                  <Link to="/shop" className="-m-2 p-2 block font-medium text-gray-900">
+                    Shop
+                  </Link>
+                </div>
+                <div className="flow-root">
+                  <Link to="/about" className="-m-2 p-2 block font-medium text-gray-900">
+                    About
+                  </Link>
+                </div>
+                <div className="flow-root">
+                  <Link to="/blog" className="-m-2 p-2 block font-medium text-gray-900">
+                    Blog
+                  </Link>
+                </div>
+                <div className="flow-root">
+                  <Link to="/contact" className="-m-2 p-2 block font-medium text-gray-900">
+                    Contact
+                  </Link>
+                </div>
+                <div className="flow-root border-t border-gray-200 pt-6">
+                  <Link to="/account" className="-m-2 p-2 block font-medium text-gray-900 flex items-center">
+                    <User className="w-5 h-5 mr-2" />
+                    My Account
+                  </Link>
+                </div>
+                <div className="flow-root">
+                  <Link to="/track-order" className="-m-2 p-2 block font-medium text-gray-900">
+                    Track Order
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="flex-1">
