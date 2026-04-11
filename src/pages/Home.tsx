@@ -3,6 +3,10 @@ import { Product } from '../types';
 import { getProducts, isApiConfigured } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
 import { HeroSlider } from '../components/HeroSlider';
+import { FeaturesSection } from '../components/FeaturesSection';
+import { CategoriesGrid } from '../components/CategoriesGrid';
+import { TestimonialsSection } from '../components/TestimonialsSection';
+import { NewsletterCTA } from '../components/NewsletterCTA';
 import { Loader2, AlertCircle, ArrowLeftRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -52,9 +56,11 @@ export const Home: React.FC = () => {
   return (
     <div className="w-full">
       <HeroSlider />
+      <FeaturesSection />
+      <CategoriesGrid />
       
-      {/* Hero Section */}
-      <div className="relative bg-gray-900 h-[600px] flex items-center justify-center">
+      {/* Hero Section (Banner) */}
+      <div className="relative bg-gray-900 h-[500px] flex items-center justify-center my-16">
         <div className="absolute inset-0 overflow-hidden">
           <img 
             src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
@@ -195,6 +201,9 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      <TestimonialsSection />
+      <NewsletterCTA />
     </div>
   );
 };
