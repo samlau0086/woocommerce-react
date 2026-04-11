@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Product } from '../types';
 import { getProducts, isApiConfigured } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
+import { HeroSlider } from '../components/HeroSlider';
 import { Loader2, AlertCircle, ArrowLeftRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -50,6 +51,8 @@ export const Home: React.FC = () => {
 
   return (
     <div className="w-full">
+      <HeroSlider />
+      
       {/* Hero Section */}
       <div className="relative bg-gray-900 h-[600px] flex items-center justify-center">
         <div className="absolute inset-0 overflow-hidden">
