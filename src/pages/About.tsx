@@ -1,10 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Zap, Heart } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const About: React.FC = () => {
+  const aboutSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About Us",
+    "description": "We are passionate about delivering exceptional products and creating memorable shopping experiences for our customers worldwide.",
+    "url": window.location.href
+  };
+
   return (
     <div className="bg-white">
+      <SEO 
+        title="About Us"
+        description="Learn about our story, our mission, and our core values. We are passionate about delivering exceptional products."
+        canonicalUrl={window.location.href}
+        schema={aboutSchema}
+      />
       {/* Hero Section */}
       <div className="relative bg-gray-900 py-24 sm:py-32">
         <div className="absolute inset-0 overflow-hidden">

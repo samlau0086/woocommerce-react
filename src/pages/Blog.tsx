@@ -4,6 +4,7 @@ import { BlogPost } from '../types';
 import { getPosts, isApiConfigured } from '../services/api';
 import { BlogGridSkeleton } from '../components/Skeletons';
 import { Loader2, Calendar, AlertCircle } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const Blog: React.FC = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -44,8 +45,28 @@ export const Blog: React.FC = () => {
     );
   }
 
+  const blogSchema = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "WooStore Blog",
+    "description": "Tips, trends, and stories from our team.",
+    "url": window.location.href,
+    "blogPost": posts.map(post => ({
+      "@type": "BlogPosting",
+      "headline": post.title.rendered,
+      "url": `${window.location.origin}/blog/${post.slug}`,
+      "datePublished": post.date
+    }))
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen py-12">
+      <SEO 
+        title="Blog"
+        description="Latest news, tips, and insights from our team."
+        canonicalUrl={window.location.href}
+        schema={blogSchema}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">

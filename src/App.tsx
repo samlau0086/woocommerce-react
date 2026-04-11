@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { Shop } from './pages/Shop';
@@ -23,26 +24,28 @@ import { CartProvider } from './context/CartContext';
 
 export default function App() {
   return (
-    <CartProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="shop" element={<Shop />} />
-            <Route path="product/:slug" element={<ProductDetails />} />
-            <Route path="cart" element={<Cart />} />
-            <Route path="checkout" element={<Checkout />} />
-            <Route path="order-confirmation" element={<OrderConfirmation />} />
-            <Route path="about" element={<About />} />
-            <Route path="contact" element={<Contact />} />
-            <Route path="track-order" element={<OrderTracking />} />
-            <Route path="order/:id" element={<OrderDetails />} />
-            <Route path="blog" element={<Blog />} />
-            <Route path="blog/:slug" element={<BlogPostPage />} />
-            <Route path="account" element={<Account />} />
-          </Route>
-        </Routes>
-      </Router>
-    </CartProvider>
+    <HelmetProvider>
+      <CartProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="shop" element={<Shop />} />
+              <Route path="product/:slug" element={<ProductDetails />} />
+              <Route path="cart" element={<Cart />} />
+              <Route path="checkout" element={<Checkout />} />
+              <Route path="order-confirmation" element={<OrderConfirmation />} />
+              <Route path="about" element={<About />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="track-order" element={<OrderTracking />} />
+              <Route path="order/:id" element={<OrderDetails />} />
+              <Route path="blog" element={<Blog />} />
+              <Route path="blog/:slug" element={<BlogPostPage />} />
+              <Route path="account" element={<Account />} />
+            </Route>
+          </Routes>
+        </Router>
+      </CartProvider>
+    </HelmetProvider>
   );
 }

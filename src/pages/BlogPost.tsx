@@ -4,6 +4,7 @@ import { BlogPost, Comment } from '../types';
 import { getPostBySlug, getCommentsByPostId, addComment, isApiConfigured } from '../services/api';
 import { BlogPostDetailSkeleton } from '../components/Skeletons';
 import { Loader2, ArrowLeft, Calendar, MessageSquare, User, AlertCircle, ChevronRight } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -116,8 +117,29 @@ export const BlogPostPage: React.FC = () => {
     );
   }
 
+  const articleSchema = post ? {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title.rendered,
+    "image": post.featured_image_url ? [post.featured_image_url] : [],
+    "datePublished": post.date,
+    "dateModified": post.modified || post.date,
+    "author": {
+      "@type": "Person",
+      "name": "WooStore" // You might want to fetch the actual author name if available
+    }
+  } : undefined;
+
   return (
     <article className="bg-white min-h-screen pb-24">
+      {post && (
+        <SEO 
+          title={post.title.rendered}
+          description={post.excerpt?.rendered?.replace(/<[^>]*>?/gm, '').substring(0, 160) || `Read our latest article: ${post.title.rendered}`}
+          canonicalUrl={window.location.href}
+          schema={articleSchema}
+        />
+      )}
       {/* Hero Image */}
       {post.featured_image_url && (
         <div className="w-full h-64 md:h-96 relative bg-gray-900">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
 import { submitContactForm } from '../services/api';
+import { SEO } from '../components/SEO';
 
 export const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -27,7 +28,7 @@ export const Contact: React.FC = () => {
     try {
       const data = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
-        data.append(key, value);
+        data.append(key, value as string);
       });
 
       const response = await submitContactForm(formId, data);
@@ -51,8 +52,22 @@ export const Contact: React.FC = () => {
     }
   };
 
+  const contactSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact Us",
+    "description": "Have a question or want to get in touch? We'd love to hear from you.",
+    "url": window.location.href
+  };
+
   return (
     <div className="bg-white">
+      <SEO 
+        title="Contact Us"
+        description="Have a question or want to get in touch? We'd love to hear from you."
+        canonicalUrl={window.location.href}
+        schema={contactSchema}
+      />
       {/* Hero Section */}
       <div className="bg-gray-900 py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

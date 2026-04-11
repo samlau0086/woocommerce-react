@@ -6,6 +6,7 @@ import { ProductCard } from '../components/ProductCard';
 import { ProductGridSkeleton } from '../components/Skeletons';
 import { Loader2, Filter, X, AlertCircle } from 'lucide-react';
 import { decodeHtml } from '../utils/html';
+import { SEO } from '../components/SEO';
 
 export const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -86,8 +87,37 @@ export const Shop: React.FC = () => {
     return true;
   });
 
+  const categoryName = selectedCategory 
+    ? categories.find(c => c.slug === selectedCategory)?.name 
+    : undefined;
+    
+  const pageTitle = categoryName ? decodeHtml(categoryName) : 'Shop All Products';
+  const pageDescription = `Browse our collection of ${pageTitle.toLowerCase()}. Find the best deals and premium quality products.`;
+
+  const shopSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": pageTitle,
+    "description": pageDescription,
+    "url": window.location.href,
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": filteredProducts.map((product, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "url": `${window.location.origin}/product/${product.slug}`
+      }))
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <SEO 
+        title={pageTitle}
+        description={pageDescription}
+        canonicalUrl={window.location.href}
+        schema={shopSchema}
+      />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Shop</h1>

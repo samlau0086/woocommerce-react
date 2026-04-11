@@ -7,6 +7,7 @@ import { ProductDetailSkeleton } from '../components/Skeletons';
 import { Loader2, ArrowLeft, Minus, Plus, ShoppingCart, Star, User, AlertCircle, Tag, Copy, ChevronRight, Image as ImageIcon, X, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { decodeHtml } from '../utils/html';
 import { PriceDisplay } from '../components/PriceDisplay';
+import { SEO } from '../components/SEO';
 
 export const ProductDetails: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -237,7 +238,7 @@ export const ProductDetails: React.FC = () => {
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const files = Array.from(e.target.files || []) as File[];
     if (reviewImages.length + files.length > 10) {
       alert('You can only upload up to 10 images.');
       return;
@@ -331,8 +332,40 @@ export const ProductDetails: React.FC = () => {
     setTimeout(() => setShowCouponSuccess(false), 3000);
   };
 
+  const productSchema = product ? {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": decodeHtml(product.name),
+    "image": product.images.map(img => img.src),
+    "description": decodeHtml(product.short_description || product.description).replace(/<[^>]*>?/gm, ''),
+    "sku": product.sku || product.id.toString(),
+    "offers": {
+      "@type": "Offer",
+      "url": window.location.href,
+      "priceCurrency": "USD", // You might want to make this dynamic based on store settings
+      "price": product.sale_price || product.regular_price || product.price,
+      "availability": product.stock_status === 'instock' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    },
+    ...(product.average_rating && product.rating_count ? {
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": product.average_rating,
+        "reviewCount": product.rating_count
+      }
+    } : {})
+  } : undefined;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {product && (
+        <SEO 
+          title={decodeHtml(product.name)} 
+          description={decodeHtml(product.short_description || product.description).replace(/<[^>]*>?/gm, '').substring(0, 160)}
+          canonicalUrl={window.location.href}
+          schema={productSchema}
+        />
+      )}
       <nav className="flex items-center text-sm text-gray-500 mb-8 whitespace-nowrap overflow-x-auto" aria-label="Breadcrumb">
         <Link to="/" className="hover:text-gray-900 transition-colors">Home</Link>
         <ChevronRight className="w-4 h-4 mx-2 flex-shrink-0 text-gray-400" />

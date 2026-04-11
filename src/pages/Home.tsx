@@ -10,6 +10,7 @@ import { NewsletterCTA } from '../components/NewsletterCTA';
 import { ProductGridSkeleton } from '../components/Skeletons';
 import { Loader2, AlertCircle, ArrowLeftRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SEO } from '../components/SEO';
 
 const FaqItem = ({ question, answer }: { question: string, answer: string }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,8 +55,35 @@ export const Home: React.FC = () => {
     fetchProducts();
   }, []);
 
+  const homeSchema = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "WooStore",
+      "url": window.location.origin,
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": `${window.location.origin}/shop?q={search_term_string}`,
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "WooStore",
+      "url": window.location.origin,
+      "logo": `${window.location.origin}/logo.png`
+    }
+  ];
+
   return (
     <div className="w-full">
+      <SEO 
+        title="Home" 
+        description="Discover our curated collection of premium products designed to bring elegance and functionality to your everyday life."
+        canonicalUrl={window.location.href}
+        schema={homeSchema}
+      />
       <HeroSlider />
       <FeaturesSection />
       <CategoriesGrid />
