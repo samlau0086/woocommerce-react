@@ -33,6 +33,17 @@ const getWpUrl = (endpoint: string, params: Record<string, string> = {}) => {
   return url.toString();
 };
 
+// Custom fetch wrapper to inject the react-headless header into all requests
+const apiFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+  const headers = new Headers(init?.headers);
+  headers.set('react-headless', 'true');
+  
+  return fetch(input, {
+    ...init,
+    headers,
+  });
+};
+
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 
 const getFromCache = <T>(key: string): T | null => {
@@ -68,7 +79,7 @@ export const getProducts = async (): Promise<Product[]> => {
     const cached = getFromCache<Product[]>(cacheKey);
     if (cached) return cached;
 
-    const response = await fetch(getWcUrl('products'));
+    const response = await apiFetch(getWcUrl('products'));
     if (!response.ok) throw new Error('Failed to fetch products');
     const data = await response.json();
     setCache(cacheKey, data);
@@ -342,7 +353,7 @@ export const getProductBySlug = async (slug: string, forceRefresh = false): Prom
       if (cached) return cached;
     }
 
-    const response = await fetch(getWcUrl('products', { slug }));
+    const response = await apiFetch(getWcUrl('products', { slug }));
     if (!response.ok) throw new Error('Failed to fetch product');
     const products = await response.json();
     const product = products.length > 0 ? products[0] : null;
@@ -350,7 +361,7 @@ export const getProductBySlug = async (slug: string, forceRefresh = false): Prom
     if (product) {
       // Try to fetch the rendered content from WP REST API as a fallback for block editor content
       try {
-        const wpResponse = await fetch(getWpUrl('product', { slug }));
+        const wpResponse = await apiFetch(getWpUrl('product', { slug }));
         if (wpResponse.ok) {
           const wpProducts = await wpResponse.json();
           if (wpProducts.length > 0 && wpProducts[0].content?.rendered) {
@@ -379,7 +390,7 @@ export const getCategories = async () => {
     const cached = getFromCache<any[]>(cacheKey);
     if (cached) return cached;
 
-    const response = await fetch(getWcUrl('products/categories'));
+    const response = await apiFetch(getWcUrl('products/categories'));
     if (!response.ok) throw new Error('Failed to fetch categories');
     const data = await response.json();
     setCache(cacheKey, data);
@@ -396,7 +407,7 @@ export const getPosts = async (): Promise<BlogPost[]> => {
     const cached = getFromCache<BlogPost[]>(cacheKey);
     if (cached) return cached;
 
-    const response = await fetch(getWpUrl('posts', { _embed: '1' }));
+    const response = await apiFetch(getWpUrl('posts', { _embed: '1' }));
     if (!response.ok) throw new Error('Failed to fetch posts');
     const posts = await response.json();
     
@@ -423,7 +434,7 @@ export const getPostBySlug = async (slug: string): Promise<BlogPost | null> => {
     const cached = getFromCache<BlogPost>(cacheKey);
     if (cached) return cached;
 
-    const response = await fetch(getWpUrl('posts', { slug, _embed: '1' }));
+    const response = await apiFetch(getWpUrl('posts', { slug, _embed: '1' }));
     if (!response.ok) throw new Error('Failed to fetch post');
     const posts = await response.json();
     
@@ -450,7 +461,7 @@ export const getPageBySlug = async (slug: string): Promise<any | null> => {
     const cached = getFromCache<any>(cacheKey);
     if (cached) return cached;
 
-    const response = await fetch(getWpUrl('pages', { slug, _embed: '1' }));
+    const response = await apiFetch(getWpUrl('pages', { slug, _embed: '1' }));
     if (!response.ok) throw new Error('Failed to fetch page');
     const pages = await response.json();
     
@@ -473,7 +484,7 @@ export const getPageBySlug = async (slug: string): Promise<any | null> => {
 
 export const getCommentsByPostId = async (postId: number): Promise<Comment[]> => {
   try {
-    const response = await fetch(getWpUrl('comments', { post: postId.toString() }));
+    const response = await apiFetch(getWpUrl('comments', { post: postId.toString() }));
     if (!response.ok) throw new Error('Failed to fetch comments');
     const comments = await response.json();
     
@@ -502,7 +513,7 @@ export const addComment = async (postId: number, author_name: string, author_ema
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(getWpUrl('comments'), {
+    const response = await apiFetch(getWpUrl('comments'), {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -538,7 +549,7 @@ export const getProductReviews = async (productId: number): Promise<ProductRevie
     const cached = getFromCache<ProductReview[]>(cacheKey);
     if (cached) return cached;
 
-    const response = await fetch(getWcUrl('products/reviews', { product: productId.toString() }));
+    const response = await apiFetch(getWcUrl('products/reviews', { product: productId.toString() }));
     if (!response.ok) throw new Error('Failed to fetch product reviews');
     const reviews = await response.json();
     
@@ -550,7 +561,7 @@ export const getProductReviews = async (productId: number): Promise<ProductRevie
       params.append('post_id', productId.toString());
       params.append('cpage', '1');
       
-      const ajaxRes = await fetch(`${API_URL}/wp-admin/admin-ajax.php`, {
+      const ajaxRes = await apiFetch(`${API_URL}/wp-admin/admin-ajax.php`, {
         method: 'POST',
         body: params
       });
@@ -670,7 +681,7 @@ export const addProductReview = async (productId: number, author_name: string, r
         }
       }
 
-      const response = await fetch('/api/reviews', {
+      const response = await apiFetch('/api/reviews', {
         method: 'POST',
         body: formData
       });
@@ -730,7 +741,7 @@ export const addProductReview = async (productId: number, author_name: string, r
         rating: rating
       };
 
-      const response = await fetch(getWcUrl('products/reviews'), {
+      const response = await apiFetch(getWcUrl('products/reviews'), {
         method: 'POST',
         headers,
         body: JSON.stringify(payload)
@@ -768,7 +779,7 @@ export const addProductReview = async (productId: number, author_name: string, r
 
 export const voteReview = async (commentId: number, productId: number, vote: 'up' | 'down'): Promise<{ up: number, down: number }> => {
   try {
-    const response = await fetch(`/api/reviews/${commentId}/vote`, {
+    const response = await apiFetch(`/api/reviews/${commentId}/vote`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -803,7 +814,7 @@ export const voteReview = async (commentId: number, productId: number, vote: 'up
 export const getShippingMethods = async (): Promise<any[]> => {
   try {
     // First get all zones
-    const zonesResponse = await fetch(getWcUrl('shipping/zones'));
+    const zonesResponse = await apiFetch(getWcUrl('shipping/zones'));
     if (!zonesResponse.ok) throw new Error('Failed to fetch shipping zones');
     const zones = await zonesResponse.json();
     
@@ -811,14 +822,14 @@ export const getShippingMethods = async (): Promise<any[]> => {
     
     // For each zone, get its methods and locations
     for (const zone of zones) {
-      const methodsResponse = await fetch(getWcUrl(`shipping/zones/${zone.id}/methods`));
+      const methodsResponse = await apiFetch(getWcUrl(`shipping/zones/${zone.id}/methods`));
       
       // Zone 0 (Rest of the World) doesn't have locations endpoint in the same way, 
       // or it might return empty. We handle it by assigning an empty locations array.
       let locations: any[] = [];
       if (zone.id !== 0) {
         try {
-          const locationsResponse = await fetch(getWcUrl(`shipping/zones/${zone.id}/locations`));
+          const locationsResponse = await apiFetch(getWcUrl(`shipping/zones/${zone.id}/locations`));
           if (locationsResponse.ok) {
             locations = await locationsResponse.json();
           }
@@ -847,7 +858,7 @@ export const getShippingMethods = async (): Promise<any[]> => {
 
 export const getPaymentGateways = async (): Promise<PaymentGateway[]> => {
   try {
-    const response = await fetch(getWcUrl('payment_gateways'));
+    const response = await apiFetch(getWcUrl('payment_gateways'));
     if (!response.ok) throw new Error('Failed to fetch payment gateways');
     const gateways = await response.json();
     // Only return enabled gateways
@@ -864,7 +875,7 @@ export const getCoupons = async (): Promise<Coupon[]> => {
     const cached = getFromCache<Coupon[]>(cacheKey);
     if (cached) return cached;
 
-    const response = await fetch(getWcUrl('coupons'));
+    const response = await apiFetch(getWcUrl('coupons'));
     if (!response.ok) throw new Error('Failed to fetch coupons');
     const data = await response.json();
     setCache(cacheKey, data);
@@ -877,7 +888,7 @@ export const getCoupons = async (): Promise<Coupon[]> => {
 
 export const getCouponByCode = async (code: string): Promise<Coupon | null> => {
   try {
-    const response = await fetch(getWcUrl('coupons', { code }));
+    const response = await apiFetch(getWcUrl('coupons', { code }));
     if (!response.ok) throw new Error('Failed to fetch coupon');
     const coupons = await response.json();
     return coupons.length > 0 ? coupons[0] : null;
@@ -890,7 +901,7 @@ export const getCouponByCode = async (code: string): Promise<Coupon | null> => {
 export const getSiteInfo = async (): Promise<SiteInfo | null> => {
   try {
     if (!API_URL) return null;
-    const response = await fetch(`${API_URL}/wp-json/`);
+    const response = await apiFetch(`${API_URL}/wp-json/`);
     if (!response.ok) throw new Error('Failed to fetch site info');
     const data = await response.json();
     return { name: data.name, description: data.description };
@@ -906,7 +917,7 @@ export const getSiteInfo = async (): Promise<SiteInfo | null> => {
 
 export const createOrder = async (orderData: any): Promise<any> => {
   try {
-    const response = await fetch(getWcUrl('orders'), {
+    const response = await apiFetch(getWcUrl('orders'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -928,7 +939,7 @@ export const createOrder = async (orderData: any): Promise<any> => {
 
 export const getOrder = async (orderId: number): Promise<any> => {
   try {
-    const response = await fetch(getWcUrl(`orders/${orderId}`));
+    const response = await apiFetch(getWcUrl(`orders/${orderId}`));
     if (!response.ok) {
       throw new Error('Failed to fetch order');
     }
@@ -941,7 +952,7 @@ export const getOrder = async (orderId: number): Promise<any> => {
 
 export const registerCustomer = async (email: string, password?: string): Promise<any> => {
   try {
-    const response = await fetch(getWcUrl('customers'), {
+    const response = await apiFetch(getWcUrl('customers'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -967,7 +978,7 @@ export const registerCustomer = async (email: string, password?: string): Promis
 
 export const getCustomerByEmail = async (email: string): Promise<any> => {
   try {
-    const response = await fetch(getWcUrl('customers', { email }));
+    const response = await apiFetch(getWcUrl('customers', { email }));
     if (!response.ok) {
       throw new Error('Failed to fetch customer');
     }
@@ -982,7 +993,7 @@ export const getCustomerByEmail = async (email: string): Promise<any> => {
 export const loginCustomer = async (username: string, password: string): Promise<any> => {
   try {
     if (!API_URL) throw new Error('VITE_WP_API_URL is not defined');
-    const response = await fetch(`${API_URL}/wp-json/jwt-auth/v1/token`, {
+    const response = await apiFetch(`${API_URL}/wp-json/jwt-auth/v1/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1007,7 +1018,7 @@ export const loginCustomer = async (username: string, password: string): Promise
 
 export const getCurrentUser = async (token: string): Promise<any> => {
   if (!API_URL) throw new Error('VITE_WP_API_URL is not defined');
-  const response = await fetch(`${API_URL}/wp-json/wp/v2/users/me`, {
+  const response = await apiFetch(`${API_URL}/wp-json/wp/v2/users/me`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
@@ -1021,7 +1032,7 @@ export const getCurrentUser = async (token: string): Promise<any> => {
 export const getCustomerOrders = async (customerId: number): Promise<any[]> => {
   if (!customerId) return [];
   try {
-    const response = await fetch(getWcUrl('orders', { customer: customerId.toString() }));
+    const response = await apiFetch(getWcUrl('orders', { customer: customerId.toString() }));
     if (!response.ok) {
       throw new Error('Failed to fetch customer orders');
     }
@@ -1035,7 +1046,7 @@ export const getCustomerOrders = async (customerId: number): Promise<any[]> => {
 export const getCustomer = async (customerId: number): Promise<any> => {
   if (!customerId) return null;
   try {
-    const response = await fetch(getWcUrl(`customers/${customerId}`));
+    const response = await apiFetch(getWcUrl(`customers/${customerId}`));
     if (!response.ok) {
       throw new Error('Failed to fetch customer details');
     }
@@ -1051,7 +1062,7 @@ export const getCountries = async (): Promise<any[]> => {
     const cached = getFromCache<any[]>('wc_countries');
     if (cached) return cached;
 
-    const response = await fetch(getWcUrl('data/countries'));
+    const response = await apiFetch(getWcUrl('data/countries'));
     if (!response.ok) {
       throw new Error('Failed to fetch countries');
     }
@@ -1069,7 +1080,7 @@ export const getCountries = async (): Promise<any[]> => {
 
 export const submitContactForm = async (formId: string, formData: FormData): Promise<any> => {
   if (!API_URL) throw new Error('VITE_WP_API_URL is not defined');
-  const response = await fetch(`${API_URL}/wp-json/contact-form-7/v1/contact-forms/${formId}/feedback`, {
+  const response = await apiFetch(`${API_URL}/wp-json/contact-form-7/v1/contact-forms/${formId}/feedback`, {
     method: 'POST',
     body: formData
   });
@@ -1078,7 +1089,7 @@ export const submitContactForm = async (formId: string, formData: FormData): Pro
 
 export const trackOrder = async (orderId: string, email: string): Promise<any> => {
   try {
-    const response = await fetch(getWcUrl(`orders/${orderId}`));
+    const response = await apiFetch(getWcUrl(`orders/${orderId}`));
     if (!response.ok) {
       if (response.status === 404) {
         throw new Error('Order not found. Please check your Order ID.');
@@ -1101,7 +1112,7 @@ export const trackOrder = async (orderId: string, email: string): Promise<any> =
 export const updateCustomer = async (customerId: number, data: any): Promise<any> => {
   if (!customerId) throw new Error('Invalid customer ID');
   try {
-    const response = await fetch(getWcUrl(`customers/${customerId}`), {
+    const response = await apiFetch(getWcUrl(`customers/${customerId}`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
