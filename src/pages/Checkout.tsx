@@ -479,7 +479,13 @@ export const Checkout: React.FC = () => {
           total: shippingCost.toString()
         }
       ] : [],
-      coupon_lines: couponCode ? [{ code: couponCode }] : []
+      coupon_lines: couponCode ? [{ code: couponCode }] : [],
+      meta_data: [
+        {
+          key: '_headless_frontend_url',
+          value: window.location.origin
+        }
+      ]
     };
 
     return orderData;
