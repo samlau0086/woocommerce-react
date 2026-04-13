@@ -168,6 +168,23 @@ jobs:
 
 每次你将代码推送到 `main` 分支时，GitHub Actions 就会自动构建项目并将其部署到 Cloudflare Pages。
 
+## ❓ 常见问题与故障排除 (FAQ & Troubleshooting)
+
+### 1. 线上部署后提交表单报错："The requested contact form was not found."
+**原因**：Vite 是在**打包构建（Build）**时将环境变量静态注入到前端代码中的。如果线上打包时没有读取到 `VITE_CF7_FORM_ID`，代码就会使用默认的 fallback 值（ID 为 1），从而导致 WordPress 找不到表单。
+
+**解决方法**：
+你需要确保环境变量已正确配置，**并且重新触发一次构建部署**。
+
+*   **如果你使用 Cloudflare Pages 直接关联 GitHub**：
+    1. 进入 Cloudflare 控制台 -> 你的项目 -> **设置 (Settings)** -> **环境变量 (Environment variables)**。
+    2. 确保已添加 `VITE_CF7_FORM_ID` 和 `VITE_CF7_NEWSLETTER_ID`。
+    3. **关键步骤**：回到 **部署 (Deployments)** 页面，点击最新部署右侧的三个点，选择 **重试部署 (Retry deployment)**。
+*   **如果你使用 GitHub Actions 部署**：
+    1. 进入 GitHub 仓库 -> **Settings** -> **Secrets and variables** -> **Actions** -> **Variables** 选项卡。
+    2. 确保已添加 `VITE_CF7_FORM_ID` 等变量（注意是 Variables 而不是 Secrets，如果你的 workflow 中使用的是 `${{ vars.XXX }}`）。
+    3. **关键步骤**：进入 **Actions** 页面，手动触发一次 **Run workflow** 重新打包部署。
+
 ## ✨ 功能特性
 *   **完整的购物流程**：商品浏览、加入购物车、结账。
 *   **用户账户系统**：登录、注册、密码找回、订单历史、地址管理。
