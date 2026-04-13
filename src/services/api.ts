@@ -33,15 +33,34 @@ const getWpUrl = (endpoint: string, params: Record<string, string> = {}) => {
   return url.toString();
 };
 
-// Custom fetch wrapper to inject the react-headless header into all requests
+// Custom fetch wrapper to inject the react-headless identifier into all requests
 const apiFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-  const headers = new Headers(init?.headers);
-  headers.set('react-headless', 'true');
-  
-  return fetch(input, {
-    ...init,
-    headers,
-  });
+  // To avoid CORS preflight (OPTIONS) errors caused by custom headers,
+  // we append a query parameter instead of setting a custom header.
+  let urlString = '';
+  if (typeof input === 'string') {
+    urlString = input;
+  } else if (input instanceof URL) {
+    urlString = input.toString();
+  } else if (input instanceof Request) {
+    urlString = input.url;
+  }
+
+  try {
+    // Handle both absolute and relative URLs
+    const url = new URL(urlString, urlString.startsWith('http') ? undefined : window.location.origin);
+    url.searchParams.append('react-headless', 'true');
+    
+    // If input was a Request object, we need to recreate it with the new URL
+    if (input instanceof Request) {
+      return fetch(new Request(url.toString(), input), init);
+    }
+    
+    return fetch(url.toString(), init);
+  } catch (e) {
+    // Fallback if URL parsing fails
+    return fetch(input, init);
+  }
 };
 
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
