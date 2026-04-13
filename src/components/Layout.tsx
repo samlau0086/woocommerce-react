@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, Menu, Search, User, X, MapPin, ArrowLeftRight, Globe, Lock } from 'lucide-react';
+import { ShoppingCart, Menu, Search, User, X, MapPin, ArrowLeftRight, Globe, Lock, ChevronDown } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 import { getSiteInfo } from '../services/api';
@@ -80,7 +80,21 @@ export const Layout: React.FC = () => {
               <Link to="/" className="text-xl font-bold tracking-tight">
                 {siteInfo ? siteInfo.name : <>WOO<span className="text-blue-600">STORE</span></>}
               </Link>
-              <nav className="hidden md:flex ml-10 space-x-8">
+              <nav className="hidden md:flex ml-10 space-x-8 items-center">
+                <div className="relative group">
+                  <button className="text-sm font-medium text-gray-700 hover:text-black transition-colors flex items-center gap-1 py-2">
+                    Home Versions
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                  <div className="absolute left-0 top-full w-48 bg-white border border-gray-100 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                    <div className="py-2">
+                      <Link to="/" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">B2C Retail</Link>
+                      <Link to="/b2b" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">B2B Wholesale</Link>
+                      <Link to="/factory" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">OEM Factory</Link>
+                      <Link to="/cnc" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">CNC Machining</Link>
+                    </div>
+                  </div>
+                </div>
                 <Link to="/shop" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
                   Shop
                 </Link>
@@ -142,6 +156,17 @@ export const Layout: React.FC = () => {
                 </button>
               </div>
               <div className="py-6 px-4 space-y-6 overflow-y-auto">
+                <div className="flow-root">
+                  <div className="-m-2 p-2 block font-medium text-gray-900">
+                    Home Versions
+                  </div>
+                  <div className="pl-4 space-y-4 mt-4 border-l-2 border-gray-100">
+                    <Link to="/" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">B2C Retail</Link>
+                    <Link to="/b2b" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">B2B Wholesale</Link>
+                    <Link to="/factory" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">OEM Factory</Link>
+                    <Link to="/cnc" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">CNC Machining</Link>
+                  </div>
+                </div>
                 <div className="flow-root">
                   <Link to="/shop" className="-m-2 p-2 block font-medium text-gray-900">
                     Shop
