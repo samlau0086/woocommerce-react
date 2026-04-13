@@ -26,6 +26,9 @@ import { LandingPageCustom } from './pages/LandingPageCustom';
 import { HomeB2B } from './pages/HomeB2B';
 import { HomeFactory } from './pages/HomeFactory';
 import { HomeCNC } from './pages/HomeCNC';
+import { HomeAutoParts } from './pages/HomeAutoParts';
+import { HomeCosmetics } from './pages/HomeCosmetics';
+import { HomePetSupplies } from './pages/HomePetSupplies';
 import { CartProvider } from './context/CartContext';
 
 export default function App() {
@@ -39,6 +42,9 @@ export default function App() {
               <Route path="b2b" element={<HomeB2B />} />
               <Route path="factory" element={<HomeFactory />} />
               <Route path="cnc" element={<HomeCNC />} />
+              <Route path="auto-parts" element={<HomeAutoParts />} />
+              <Route path="cosmetics" element={<HomeCosmetics />} />
+              <Route path="pet-supplies" element={<HomePetSupplies />} />
               <Route path="shop" element={<Shop />} />
               <Route path="product/:slug" element={<ProductDetails />} />
               <Route path="landing/:slug" element={<LandingPageExample />} />

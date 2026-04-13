@@ -92,6 +92,9 @@ export const Layout: React.FC = () => {
                       <Link to="/b2b" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">B2B Wholesale</Link>
                       <Link to="/factory" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">OEM Factory</Link>
                       <Link to="/cnc" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">CNC Machining</Link>
+                      <Link to="/auto-parts" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Auto Parts B2B</Link>
+                      <Link to="/cosmetics" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Cosmetics OEM</Link>
+                      <Link to="/pet-supplies" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Pet Supplies B2B</Link>
                     </div>
                   </div>
                 </div>
@@ -165,6 +168,9 @@ export const Layout: React.FC = () => {
                     <Link to="/b2b" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">B2B Wholesale</Link>
                     <Link to="/factory" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">OEM Factory</Link>
                     <Link to="/cnc" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">CNC Machining</Link>
+                    <Link to="/auto-parts" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">Auto Parts B2B</Link>
+                    <Link to="/cosmetics" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">Cosmetics OEM</Link>
+                    <Link to="/pet-supplies" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">Pet Supplies B2B</Link>
                   </div>
                 </div>
                 <div className="flow-root">
