@@ -31,6 +31,8 @@ jobs:
         env:
           # 在这里注入构建时需要的环境变量（从 GitHub Secrets 获取）
           VITE_WP_API_URL: ${{ secrets.VITE_WP_API_URL }}
+          VITE_CF7_FORM_ID: ${{ vars.VITE_CF7_FORM_ID }}
+          VITE_CF7_NEWSLETTER_ID: ${{ vars.VITE_CF7_NEWSLETTER_ID }}
           VITE_WC_CONSUMER_KEY: ${{ secrets.VITE_WC_CONSUMER_KEY }}
           VITE_WC_CONSUMER_SECRET: ${{ secrets.VITE_WC_CONSUMER_SECRET }}
 
