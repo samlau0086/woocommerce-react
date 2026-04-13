@@ -10,7 +10,7 @@
 确保你的 WordPress 网站已经安装并激活了以下插件：
 *   **WooCommerce**: 核心电商插件。
 *   **JWT Authentication for WP-REST API**: 用于处理用户登录和注册的 JWT 认证。
-*   **Contact Form 7**: 用于“联系我们 (Contact Us)”页面的表单提交。
+*   **Contact Form 7**: 用于“联系我们 (Contact Us)”页面和底部订阅的表单提交。
 
 ### 2. WooCommerce REST API 配置
 1. 登录 WordPress 后台。
@@ -34,6 +34,8 @@
 1. 在 WordPress 后台导航到 **联系 (Contact) > 联系表单 (Contact Forms)**。
 2. 创建一个新的表单或使用默认表单。
 3. 记下该表单的 **ID**（可以在表单列表的短代码中找到，例如 `[contact-form-7 id="5" title="Contact form 1"]` 中的 `5`）。
+4. 如果你有底部订阅表单，请同样记下它的 ID。
+5. **注意**：前端代码已经自动处理了 CF7 REST API 必需的 `_wpcf7` 和 `_wpcf7_unit_tag` 隐藏字段，你只需要配置正确的 ID 即可。
 
 ### 5. 环境变量配置 (Environment Variables)
 在前端项目的根目录下创建一个 `.env` 文件（或在 AI Studio 的 Secrets 面板中配置），并填入以下环境变量：
@@ -48,6 +50,7 @@ VITE_WC_CONSUMER_SECRET="cs_your_consumer_secret_here"
 
 # Contact Form 7 的表单 ID
 VITE_CF7_FORM_ID="5"
+VITE_CF7_NEWSLETTER_ID="6"
 ```
 
 ### 6. 运行项目
@@ -63,6 +66,10 @@ npm run dev
 # 构建生产版本
 npm run build
 ```
+
+## 🌐 关于跨域 (CORS) 与 API 请求
+本项目内置了一个自定义的 `apiFetch` 拦截器。为了避免严格的 CORS 预检请求 (OPTIONS) 导致请求被拦截，前端在发出所有 API 请求时，会自动在 URL 末尾追加 `?react-headless=true` 查询参数，而不是使用自定义 HTTP Header。
+这确保了前端可以直接与你的 WordPress 后端通信，而无需在服务器端修改 Nginx/Apache 的 CORS 规则。
 
 ## ☁️ 部署到 Cloudflare Pages (Deploying to Cloudflare Pages)
 
@@ -82,7 +89,7 @@ npm run build
    - `VITE_WC_CONSUMER_KEY`
    - `VITE_WC_CONSUMER_SECRET`
    - `VITE_CF7_FORM_ID`
-   - `VITE_CF7_NEWSLETTER_ID` (如果有)
+   - `VITE_CF7_NEWSLETTER_ID`
 6. 点击 **保存并部署 (Save and Deploy)**。
 
 ### 选项 2：使用 GitHub Actions 自动化工作流部署
@@ -93,15 +100,19 @@ npm run build
 - **Account ID:** 在 Cloudflare 控制台右侧边栏可以找到你的账户 ID。
 - **API Token:** 点击右上角头像 > **我的个人资料 (My Profile)** > **API 令牌 (API Tokens)** > **创建令牌 (Create Token)**。选择 "编辑 Cloudflare Workers" 模板，或者创建一个自定义令牌，赋予 `Account.Pages:Edit` 权限。
 
-#### 2. 配置 GitHub Secrets
-进入你的 GitHub 仓库，点击 **Settings** > **Secrets and variables** > **Actions**，添加以下 Secrets：
+#### 2. 配置 GitHub Secrets 和 Variables
+进入你的 GitHub 仓库，点击 **Settings** > **Secrets and variables** > **Actions**。
+
+**添加至 Secrets (敏感信息):**
 - `CLOUDFLARE_ACCOUNT_ID`: 你的 Cloudflare 账户 ID。
 - `CLOUDFLARE_API_TOKEN`: 你的 Cloudflare API 令牌。
 - `VITE_WC_CONSUMER_KEY`: Woocommerce Consumer Key
 - `VITE_WC_CONSUMER_SECRET`: Woocommerce Consumer Secret
-- `VITE_WP_API_URL`: 你的 Wordpress网站URL(如https://example.com)
 
-*(注意：为了安全起见，建议你也把 `VITE_WP_API_URL` 等环境变量也加到 GitHub Secrets 中，并在 workflow 文件中注入，或者直接在 Cloudflare Pages 的后台设置环境变量)*
+**添加至 Variables (公开配置):**
+- `VITE_WP_API_URL`: 你的 Wordpress网站URL(如https://example.com)
+- `VITE_CF7_FORM_ID`: 联系表单 ID
+- `VITE_CF7_NEWSLETTER_ID`: 订阅表单 ID
 
 #### 3. 创建 Workflow 文件
 在你的项目根目录下，已经存在一个名为 `.github/workflows/cloudflare-pages.yml` 的文件，内容如下。你只需要修改 `projectName` 为你自己的项目名即可：
@@ -138,8 +149,10 @@ jobs:
       - name: Build project
         run: npm run build
         env:
-          # 在这里注入构建时需要的环境变量（从 GitHub Secrets 获取）
-          VITE_WP_API_URL: ${{ secrets.VITE_WP_API_URL }}
+          # 在这里注入构建时需要的环境变量
+          VITE_WP_API_URL: ${{ vars.VITE_WP_API_URL }}
+          VITE_CF7_FORM_ID: ${{ vars.VITE_CF7_FORM_ID }}
+          VITE_CF7_NEWSLETTER_ID: ${{ vars.VITE_CF7_NEWSLETTER_ID }}
           VITE_WC_CONSUMER_KEY: ${{ secrets.VITE_WC_CONSUMER_KEY }}
           VITE_WC_CONSUMER_SECRET: ${{ secrets.VITE_WC_CONSUMER_SECRET }}
 
@@ -159,5 +172,5 @@ jobs:
 *   **完整的购物流程**：商品浏览、加入购物车、结账。
 *   **用户账户系统**：登录、注册、密码找回、订单历史、地址管理。
 *   **订单追踪**：无需登录即可通过订单号和邮箱追踪订单状态。
-*   **联系表单**：直接对接后端的 Contact Form 7。
+*   **联系表单**：直接对接后端的 Contact Form 7，已自动处理跨域和隐藏字段。
 *   **响应式设计**：完美适配手机、平板和桌面设备。
