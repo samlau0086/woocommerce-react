@@ -29,6 +29,7 @@ export const ProductDetails: React.FC = () => {
   const [newReviewContent, setNewReviewContent] = useState('');
   const [reviewImages, setReviewImages] = useState<string[]>([]);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   // Coupons state
   const [coupons, setCoupons] = useState<any[]>([]);
@@ -763,9 +764,14 @@ export const ProductDetails: React.FC = () => {
                     {review.images && review.images.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3 mb-4">
                         {review.images.map((img, idx) => (
-                          <a key={idx} href={img} target="_blank" rel="noopener noreferrer" className="block w-24 h-24 rounded-md overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity">
+                          <button 
+                            key={idx} 
+                            onClick={() => setLightboxImage(img)}
+                            className="block w-24 h-24 rounded-md overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-label={`View review photo ${idx + 1}`}
+                          >
                             <img src={img} alt={`Review photo ${idx + 1}`} className="w-full h-full object-cover" />
-                          </a>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -878,6 +884,28 @@ export const ProductDetails: React.FC = () => {
             </div>
             
           </div>
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {lightboxImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setLightboxImage(null)}
+        >
+          <button 
+            className="absolute top-4 right-4 text-white hover:text-gray-300 focus:outline-none"
+            onClick={() => setLightboxImage(null)}
+            aria-label="Close lightbox"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          <img 
+            src={lightboxImage} 
+            alt="Enlarged review photo" 
+            className="max-w-full max-h-full object-contain rounded-md"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

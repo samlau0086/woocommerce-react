@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Product } from '../types';
-import { getProducts, getCategories, isApiConfigured } from '../services/api';
+import { getProductsPaginated, getCategories, isApiConfigured } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
 import { ProductGridSkeleton } from '../components/Skeletons';
 import { Loader2, Filter, X, AlertCircle } from 'lucide-react';
@@ -16,19 +16,38 @@ export const Shop: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<{id: number, name: string, slug: string}[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryQuery);
   const [priceRange, setPriceRange] = useState<string>('');
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastProductElementRef = useCallback((node: HTMLDivElement | null) => {
+    if (loading || loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && page < totalPages) {
+        setPage(prevPage => prevPage + 1);
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loading, loadingMore, page, totalPages]);
+
   useEffect(() => {
     if (categoryQuery !== selectedCategory) {
       setSelectedCategory(categoryQuery);
+      setPage(1); // Reset page when category changes from URL
     }
   }, [categoryQuery]);
 
   const handleCategoryChange = (slug: string) => {
     setSelectedCategory(slug);
+    setPage(1); // Reset page when category changes
     setSearchParams(prev => {
       const newParams = new URLSearchParams(prev);
       if (slug) {
@@ -40,52 +59,77 @@ export const Shop: React.FC = () => {
     });
   };
 
+  // Reset page when search query or price range changes
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, priceRange]);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!isApiConfigured) {
         setLoading(false);
         return;
       }
+      
+      if (page === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
       try {
-        const [productsData, categoriesData] = await Promise.all([
-          getProducts(),
-          getCategories()
-        ]);
-        setProducts(productsData);
-        setCategories(categoriesData as any);
+        // We only need to fetch categories once
+        if (categories.length === 0) {
+          const categoriesData = await getCategories();
+          setCategories(categoriesData as any);
+        }
+
+        // Find category ID if a category is selected
+        let categoryId = '';
+        if (selectedCategory && categories.length > 0) {
+          const cat = categories.find(c => c.slug === selectedCategory);
+          if (cat) categoryId = cat.id.toString();
+        }
+
+        let min_price = '';
+        let max_price = '';
+        if (priceRange === 'under-50') max_price = '50';
+        if (priceRange === '50-100') { min_price = '50'; max_price = '100'; }
+        if (priceRange === 'over-100') min_price = '100';
+
+        const productsData = await getProductsPaginated({
+          page,
+          per_page: 12,
+          search: searchQuery,
+          category: categoryId,
+          min_price,
+          max_price
+        });
+
+        if (page === 1) {
+          setProducts(productsData.products);
+        } else {
+          setProducts(prev => [...prev, ...productsData.products]);
+        }
+        setTotalPages(productsData.totalPages);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     };
 
-    fetchData();
-  }, []);
-
-  const filteredProducts = products.filter(product => {
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const nameMatch = decodeHtml(product.name).toLowerCase().includes(query);
-      const descMatch = product.description.toLowerCase().includes(query);
-      if (!nameMatch && !descMatch) {
-        return false;
-      }
+    // We need to wait for categories to be loaded before fetching products if a category is selected
+    if (selectedCategory && categories.length === 0 && isApiConfigured) {
+      getCategories().then(cats => {
+        setCategories(cats as any);
+        fetchData();
+      });
+    } else {
+      fetchData();
     }
-
-    if (selectedCategory && !product.categories.some(c => c.slug === selectedCategory)) {
-      return false;
-    }
-    
-    if (priceRange) {
-      const price = parseFloat(product.price);
-      if (priceRange === 'under-50' && price >= 50) return false;
-      if (priceRange === '50-100' && (price < 50 || price > 100)) return false;
-      if (priceRange === 'over-100' && price <= 100) return false;
-    }
-    
-    return true;
-  });
+  }, [page, searchQuery, selectedCategory, priceRange, isApiConfigured]); // removed categories.length to avoid infinite loop
 
   const categoryName = selectedCategory 
     ? categories.find(c => c.slug === selectedCategory)?.name 
@@ -102,7 +146,7 @@ export const Shop: React.FC = () => {
     "url": window.location.href,
     "mainEntity": {
       "@type": "ItemList",
-      "itemListElement": filteredProducts.map((product, index) => ({
+      "itemListElement": products.map((product, index) => ({
         "@type": "ListItem",
         "position": index + 1,
         "url": `${window.location.origin}/product/${product.slug}`
@@ -340,14 +384,29 @@ export const Shop: React.FC = () => {
 
         {/* Product Grid */}
         <div className="flex-1">
-          {loading ? (
+          {loading && page === 1 ? (
             <ProductGridSkeleton count={6} />
-          ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+          ) : products.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.map((product, index) => {
+                  if (products.length === index + 1) {
+                    return (
+                      <div ref={lastProductElementRef} key={product.id}>
+                        <ProductCard product={product} />
+                      </div>
+                    );
+                  } else {
+                    return <ProductCard key={product.id} product={product} />;
+                  }
+                })}
+              </div>
+              {loadingMore && (
+                <div className="flex justify-center mt-8">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-12">
               <p className="text-gray-500">No products found matching your criteria.</p>

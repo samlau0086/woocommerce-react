@@ -92,6 +92,44 @@ const setCache = <T>(key: string, data: T): void => {
   }
 };
 
+export interface GetProductsParams {
+  page?: number;
+  per_page?: number;
+  category?: string; // Category ID
+  search?: string;
+  min_price?: string;
+  max_price?: string;
+}
+
+export const getProductsPaginated = async (params: GetProductsParams = {}): Promise<{ products: Product[], totalPages: number }> => {
+  try {
+    const queryParams: Record<string, string> = {};
+    if (params.page) queryParams.page = params.page.toString();
+    if (params.per_page) queryParams.per_page = params.per_page.toString();
+    if (params.category) queryParams.category = params.category;
+    if (params.search) queryParams.search = params.search;
+    if (params.min_price) queryParams.min_price = params.min_price;
+    if (params.max_price) queryParams.max_price = params.max_price;
+
+    const cacheKey = `wc_products_paginated_${JSON.stringify(queryParams)}`;
+    const cached = getFromCache<{ products: Product[], totalPages: number }>(cacheKey);
+    if (cached) return cached;
+
+    const response = await apiFetch(getWcUrl('products', queryParams));
+    if (!response.ok) throw new Error('Failed to fetch products');
+    
+    const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1', 10);
+    const data = await response.json();
+    
+    const result = { products: data, totalPages };
+    setCache(cacheKey, result);
+    return result;
+  } catch (error) {
+    console.error('Error fetching paginated products:', error);
+    return { products: [], totalPages: 1 };
+  }
+};
+
 export const getProducts = async (): Promise<Product[]> => {
   try {
     const cacheKey = 'wc_products_cache';
