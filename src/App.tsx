@@ -29,6 +29,8 @@ import { HomeCNC } from './pages/HomeCNC';
 import { HomeAutoParts } from './pages/HomeAutoParts';
 import { HomeCosmetics } from './pages/HomeCosmetics';
 import { HomePetSupplies } from './pages/HomePetSupplies';
+import { HomeDTC } from './pages/HomeDTC';
+import { HomeLaser } from './pages/HomeLaser';
 import { CartProvider } from './context/CartContext';
 
 export default function App() {
@@ -45,6 +47,8 @@ export default function App() {
               <Route path="auto-parts" element={<HomeAutoParts />} />
               <Route path="cosmetics" element={<HomeCosmetics />} />
               <Route path="pet-supplies" element={<HomePetSupplies />} />
+              <Route path="dtc" element={<HomeDTC />} />
+              <Route path="laser" element={<HomeLaser />} />
               <Route path="shop" element={<Shop />} />
               <Route path="product/:slug" element={<ProductDetails />} />
               <Route path="landing/:slug" element={<LandingPageExample />} />

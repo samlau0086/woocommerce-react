@@ -95,6 +95,8 @@ export const Layout: React.FC = () => {
                       <Link to="/auto-parts" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Auto Parts B2B</Link>
                       <Link to="/cosmetics" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Cosmetics OEM</Link>
                       <Link to="/pet-supplies" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Pet Supplies B2B</Link>
+                      <Link to="/dtc" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">DTC Brand</Link>
+                      <Link to="/laser" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Laser Engraver</Link>
                     </div>
                   </div>
                 </div>
@@ -171,6 +173,8 @@ export const Layout: React.FC = () => {
                     <Link to="/auto-parts" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">Auto Parts B2B</Link>
                     <Link to="/cosmetics" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">Cosmetics OEM</Link>
                     <Link to="/pet-supplies" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">Pet Supplies B2B</Link>
+                    <Link to="/dtc" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">DTC Brand</Link>
+                    <Link to="/laser" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">Laser Engraver</Link>
                   </div>
                 </div>
                 <div className="flow-root">
