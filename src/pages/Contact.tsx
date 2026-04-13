@@ -30,6 +30,10 @@ export const Contact: React.FC = () => {
       Object.entries(formData).forEach(([key, value]) => {
         data.append(key, value as string);
       });
+      
+      // CF7 requires these hidden fields to process the REST API request correctly
+      data.append('_wpcf7', formId);
+      data.append('_wpcf7_unit_tag', `wpcf7-f${formId}-p0-o1`);
 
       const response = await submitContactForm(formId, data);
       
