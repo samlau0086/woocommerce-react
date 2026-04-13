@@ -20,6 +20,12 @@ import { Blog } from './pages/Blog';
 import { BlogPostPage } from './pages/BlogPost';
 import { Account } from './pages/Account';
 import { OrderConfirmation } from './pages/OrderConfirmation';
+import { LandingPageExample } from './pages/LandingPageExample';
+import { LandingPageFullWidth } from './pages/LandingPageFullWidth';
+import { LandingPageCustom } from './pages/LandingPageCustom';
+import { HomeB2B } from './pages/HomeB2B';
+import { HomeFactory } from './pages/HomeFactory';
+import { HomeCNC } from './pages/HomeCNC';
 import { CartProvider } from './context/CartContext';
 
 export default function App() {
@@ -30,8 +36,14 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
+              <Route path="b2b" element={<HomeB2B />} />
+              <Route path="factory" element={<HomeFactory />} />
+              <Route path="cnc" element={<HomeCNC />} />
               <Route path="shop" element={<Shop />} />
               <Route path="product/:slug" element={<ProductDetails />} />
+              <Route path="landing/:slug" element={<LandingPageExample />} />
+              <Route path="landing-full/:slug" element={<LandingPageFullWidth />} />
+              <Route path="landing-custom/:slug" element={<LandingPageCustom />} />
               <Route path="cart" element={<Cart />} />
               <Route path="checkout" element={<Checkout />} />
               <Route path="order-confirmation" element={<OrderConfirmation />} />
