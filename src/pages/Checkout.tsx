@@ -5,6 +5,7 @@ import { CheckCircle2, Tag, CreditCard, Loader2, AlertCircle, X, ExternalLink } 
 import { getPaymentGateways, getCouponByCode, isApiConfigured, createOrder, getShippingMethods, getCustomer, loginCustomer, registerCustomer, getCurrentUser, getCountries, updateCustomer } from '../services/api';
 import { PaymentGateway } from '../types';
 import { decodeHtml } from '../utils/html';
+import { SearchableSelect } from '../components/SearchableSelect';
 
 export const Checkout: React.FC = () => {
   const { cart, cartSubtotal, cartTotal, clearCart, couponCode, discountAmount, applyCoupon, removeCoupon } = useCart();
@@ -864,26 +865,23 @@ export const Checkout: React.FC = () => {
               <div>
                 <label htmlFor="country" className="block text-sm font-medium text-gray-700">Country / Region</label>
                 <div className="mt-1">
-                  <select
+                  <SearchableSelect
                     id="country"
                     name="country"
                     required
                     value={selectedCountry}
-                    onChange={(e) => {
-                      setSelectedCountry(e.target.value);
+                    onChange={(val) => {
+                      setSelectedCountry(val);
                       setSelectedState(''); // Reset state when country changes
                       handleFormChange();
                     }}
-                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-4 py-2 border bg-white"
                     disabled={isLoadingCountries}
-                  >
-                    <option value="">Select a country...</option>
-                    {countries.map((country: any) => (
-                      <option key={country.code} value={country.code}>
-                        {decodeHtml(country.name)}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Select a country..."
+                    options={countries.map((country: any) => ({
+                      value: country.code,
+                      label: decodeHtml(country.name)
+                    }))}
+                  />
                 </div>
               </div>
 
@@ -910,24 +908,21 @@ export const Checkout: React.FC = () => {
                       
                       if (hasStates) {
                         return (
-                          <select
+                          <SearchableSelect
                             id="state"
                             name="state"
                             required
                             value={selectedState}
-                            onChange={(e) => {
-                              setSelectedState(e.target.value);
+                            onChange={(val) => {
+                              setSelectedState(val);
                               handleFormChange();
                             }}
-                            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-4 py-2 border bg-white"
-                          >
-                            <option value="">Select a state...</option>
-                            {selectedCountryObj.states.map((state: any) => (
-                              <option key={state.code} value={state.code}>
-                                {decodeHtml(state.name)}
-                              </option>
-                            ))}
-                          </select>
+                            placeholder="Select a state..."
+                            options={selectedCountryObj.states.map((state: any) => ({
+                              value: state.code,
+                              label: decodeHtml(state.name)
+                            }))}
+                          />
                         );
                       }
                       
