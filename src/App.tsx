@@ -31,6 +31,7 @@ import { HomeCosmetics } from './pages/HomeCosmetics';
 import { HomePetSupplies } from './pages/HomePetSupplies';
 import { HomeDTC } from './pages/HomeDTC';
 import { HomeLaser } from './pages/HomeLaser';
+import { HomeFragrance } from './pages/HomeFragrance';
 import { CartProvider } from './context/CartContext';
 
 export default function App() {
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="pet-supplies" element={<HomePetSupplies />} />
               <Route path="dtc" element={<HomeDTC />} />
               <Route path="laser" element={<HomeLaser />} />
+              <Route path="fragrance" element={<HomeFragrance />} />
               <Route path="shop" element={<Shop />} />
               <Route path="product/:slug" element={<ProductDetails />} />
               <Route path="landing/:slug" element={<LandingPageExample />} />

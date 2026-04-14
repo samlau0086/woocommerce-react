@@ -97,6 +97,7 @@ export const Layout: React.FC = () => {
                       <Link to="/pet-supplies" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Pet Supplies B2B</Link>
                       <Link to="/dtc" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">DTC Brand</Link>
                       <Link to="/laser" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Laser Engraver</Link>
+                      <Link to="/fragrance" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Men's Fragrance</Link>
                     </div>
                   </div>
                 </div>
@@ -175,6 +176,7 @@ export const Layout: React.FC = () => {
                     <Link to="/pet-supplies" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">Pet Supplies B2B</Link>
                     <Link to="/dtc" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">DTC Brand</Link>
                     <Link to="/laser" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">Laser Engraver</Link>
+                    <Link to="/fragrance" className="block text-sm text-gray-600 hover:text-blue-600 font-medium">Men's Fragrance</Link>
                   </div>
                 </div>
                 <div className="flow-root">
